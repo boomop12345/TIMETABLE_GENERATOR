@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign In | Timetable Scheduler</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-base:        #080c14;
+      --bg-card:        rgba(255, 255, 255, 0.045);
+      --bg-input:       rgba(255, 255, 255, 0.055);
+      --bg-input-hover: rgba(255, 255, 255, 0.075);
+      --bg-input-focus: rgba(255, 255, 255, 0.085);
+      --border-card:    rgba(255, 255, 255, 0.10);
+      --border-input:   rgba(255, 255, 255, 0.09);
+      --border-focus:   rgba(99, 130, 255, 0.65);
+      --text-primary:   rgba(255, 255, 255, 0.95);
+      --text-secondary: rgba(255, 255, 255, 0.45);
+      --text-tertiary:  rgba(255, 255, 255, 0.25);
+      --accent:         #6366f1;
+      --accent-bright:  #818cf8;
+      --accent-dim:     rgba(99, 102, 241, 0.18);
+      --divider:        rgba(255, 255, 255, 0.07);
+      --radius-card:    20px;
+      --radius-input:   11px;
+      --radius-btn:     11px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      background-image:
+        radial-gradient(ellipse 80% 60% at 10% 0%,   rgba(49, 46, 129, 0.55) 0%, transparent 55%),
+        radial-gradient(ellipse 70% 55% at 92% 8%,   rgba(15, 23, 60,  0.70) 0%, transparent 50%),
+        radial-gradient(ellipse 60% 50% at 80% 90%,  rgba(67, 56, 202, 0.30) 0%, transparent 50%),
+        radial-gradient(ellipse 75% 60% at 5%  85%,  rgba(12, 18, 42,  0.80) 0%, transparent 55%),
+        radial-gradient(ellipse 50% 40% at 50% 50%,  rgba(30, 27, 75,  0.40) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 35% at 30% 60%,  rgba(55, 48, 163, 0.20) 0%, transparent 45%);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 1fr auto;
+      grid-template-columns: 1fr;
+    }
+
+    .noise {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: 0.6;
+    }
+
+    .page {
+      position: relative; z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.25rem;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      height: 56px;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem;
+      border-bottom: 1px solid var(--divider);
+      background: rgba(8, 12, 20, 0.55);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      z-index: 10;
+    }
+
+    .topbar-logo { display: flex; align-items: center; gap: 9px; }
+
+    .logo-mark {
+      width: 28px; height: 28px; border-radius: 7px;
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 14px rgba(99, 102, 241, 0.35);
+    }
+
+    .logo-mark svg { width: 15px; height: 15px; }
+
+    .logo-name {
+      font-size: 15px; font-weight: 600; letter-spacing: -0.025em;
+      color: var(--text-primary);
+    }
+
+    .topbar-links { display: flex; gap: 1.5rem; }
+
+    .topbar-links a {
+      font-size: 12.5px; color: var(--text-secondary); text-decoration: none;
+      transition: color 0.15s;
+    }
+    .topbar-links a:hover { color: var(--text-primary); }
+
+    .main { width: 100%; max-width: 400px; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-card);
+      padding: 2.5rem 2.25rem 2rem;
+      backdrop-filter: blur(32px) saturate(160%);
+      -webkit-backdrop-filter: blur(32px) saturate(160%);
+      box-shadow:
+        0 0 0 0.5px rgba(255, 255, 255, 0.05) inset,
+        0 1px 0 rgba(255, 255, 255, 0.07) inset,
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 4px 16px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute; top: -1px; left: 20%; right: 20%; height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+    }
+
+    .card-header { margin-bottom: 2rem; text-align: center; }
+
+    .card-header h1 {
+      font-size: 24px; font-weight: 700; letter-spacing: -0.04em;
+      color: var(--text-primary); line-height: 1.15; margin-bottom: 6px;
+    }
+
+    .card-header p {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+    }
+
+    .fields { display: flex; flex-direction: column; gap: 16px; }
+
+    .field { position: relative; }
+
+    .field-label {
+      display: block;
+      font-size: 11.5px; font-weight: 500; letter-spacing: 0.04em;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      padding-left: 1px;
+    }
+
+    .field-input-wrap { position: relative; }
+
+    .field-icon {
+      position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+      width: 15px; height: 15px; color: var(--text-tertiary);
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .field-toggle {
+      position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; padding: 0;
+      color: var(--text-tertiary); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.2s;
+    }
+
+    .field-toggle:hover { color: var(--text-primary); }
+    .field-toggle svg { width: 16px; height: 16px; }
+
+    .field input {
+      width: 100%;
+      height: 44px;
+      padding: 0 40px 0 38px;
+      background: var(--bg-input);
+      border: 1px solid var(--border-input);
+      border-radius: var(--radius-input);
+      color: var(--text-primary);
+      font-size: 13.5px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+      caret-color: var(--accent-bright);
+    }
+
+    .field input::placeholder {
+      color: var(--text-tertiary);
+      font-size: 13px;
+    }
+
+    .field input:hover:not(:focus) {
+      background: var(--bg-input-hover);
+      border-color: rgba(255, 255, 255, 0.13);
+    }
+
+    .field input:focus {
+      background: var(--bg-input-focus);
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12), 0 0 0 1px rgba(99, 102, 241, 0.25);
+    }
+
+    .field input:focus ~ .field-icon,
+    .field input:focus + .field-icon { color: var(--accent-bright); }
+
+    .field input:-webkit-autofill {
+      -webkit-text-fill-color: rgba(255,255,255,0.92);
+      -webkit-box-shadow: 0 0 0 1000px #12162a inset;
+    }
+
+    .btn-primary {
+      margin-top: 10px;
+      width: 100%; height: 44px;
+      border: none; border-radius: var(--radius-btn);
+      background: var(--accent);
+      color: #fff;
+      font-size: 13.5px; font-weight: 600; letter-spacing: 0.05em;
+      text-transform: uppercase;
+      font-family: inherit;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: transform 0.15s ease, box-shadow 0.25s ease, background 0.2s ease;
+      box-shadow:
+        0 0 20px rgba(99, 102, 241, 0.30),
+        0 1px 2px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-primary::after {
+      content: "";
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.09) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      background: #6d70f5;
+      box-shadow:
+        0 0 32px rgba(99, 102, 241, 0.50),
+        0 4px 16px rgba(99, 102, 241, 0.25),
+        0 1px 2px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0) scale(0.99);
+      box-shadow:
+        0 0 14px rgba(99, 102, 241, 0.30),
+        0 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.7; cursor: not-allowed; transform: none;
+    }
+
+    .card-footer {
+      text-align: center; margin-top: 2rem;
+      font-size: 13px; color: var(--text-secondary);
+    }
+
+    .card-footer a {
+      color: var(--accent-bright); text-decoration: none; font-weight: 500;
+      transition: color 0.15s;
+    }
+
+    .card-footer a:hover { color: #a5b4fc; }
+
+    /* Toast Notification Styles */
+    #toast-container {
+      position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+
+    .toast {
+      padding: 16px 20px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-card);
+      color: var(--text-primary);
+      font-weight: 500;
+      font-size: 13px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast-success { border-left: 4px solid #10b981; }
+    .toast-error { border-left: 4px solid #ef4444; }
+    .toast svg { width: 20px; height: 20px; flex-shrink: 0; }
+    .toast-success svg { color: #10b981; }
+    .toast-error svg { color: #ef4444; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .animate-spin { animation: spin 1s linear infinite; }
+
+    @media (max-width: 480px) {
+      .main { max-width: 100%; }
+      .card { padding: 2rem 1.5rem 1.75rem; border-radius: 16px; }
+      .topbar-links { display: none; }
+    }
+
+    @media (min-width: 900px) {
+      .card { padding: 2.75rem 2.75rem 2.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toast-container"></div>
+  <div class="noise" aria-hidden="true"></div>
+
+  
+
+  <div class="page">
+    <main class="main" role="main">
+      <div class="card">
+        
+        <div class="card-header">
+          <h1>Welcome Back</h1>
+          <p>Sign in to your account to continue</p>
+        </div>
+
+        <form id="loginForm" class="fields" novalidate aria-label="Sign in form">
+
+          <div class="field">
+            <label class="field-label" for="email">Email Address</label>
+            <div class="field-input-wrap">
+              <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="name@example.com"
+                autocomplete="email"
+                required
+              />
+              <svg class="field-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M2 4a1 1 0 011-1h10a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V4z" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M2 4.5l6 4 6-4" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+              </svg>
+            </div>
+          </div>
+
+          <div class="field">
+            <label class="field-label" for="password">Password</label>
+            <div class="field-input-wrap">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="••••••••••••"
+                autocomplete="current-password"
+                required
+              />
+              <svg class="field-icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <rect x="2.5" y="7" width="11" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+                <path d="M5 7V5a3 3 0 116 0v2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+              </svg>
+              <button type="button" id="togglePassword" class="field-toggle" aria-label="Toggle password visibility">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path id="eyeIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary">
+            Login Now
+          </button>
+
+        </form>
+
+        <p class="card-footer">
+          Don't have an account? <a href="/signup.html">Create Account</a>
+        </p>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      
+      const icon = type === 'success' 
+          ? '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+          : '<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>';
+
+      toast.innerHTML = `
+        ${icon}
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 500);
+      }, 4000);
+    }
+
+    // Redirect if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.href = '/timetable.html';
+    }
+
+    // Password Toggle
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+
+    togglePassword.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      eyeIcon.setAttribute('d', type === 'password' ? 
+        'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' : 
+        'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18'
+      );
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const submitBtn = this.querySelector('button[type="submit"]');
+      const originalBtnText = submitBtn.innerHTML; // using innerHTML to save text/icons
+      
+      // Loading state
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `
+        <svg class="animate-spin" style="width:20px;height:20px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        Authenticating...
+      `;
+
+      const email = this.querySelector('input[type="email"]').value;
+      const password = passwordInput.value;
+
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          if (data.errors) {
+            showToast(data.errors.map(err => err.msg).join('\n'), 'error');
+          } else {
+            showToast(data.message || 'Login failed', 'error');
+          }
+          return;
+        }
+
+        showToast('Login successful! Redirecting...', 'success');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('role', data.role);
+        
+        setTimeout(() => {
+          window.location.href = '/timetable.html';
+        }, 1000);
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('Server error or network issue', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+      }
+    });
+  </script>
+
+</body>
+</html>
